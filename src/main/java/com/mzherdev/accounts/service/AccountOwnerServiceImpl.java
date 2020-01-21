@@ -26,10 +26,10 @@ public class AccountOwnerServiceImpl implements AccountOwnerService {
 
     @Override
     public AccountOwner create(AccountOwner owner) {
-        if(owner.getName() == null || owner.getName().isEmpty()) {
+        if (owner.getName() == null || owner.getName().isEmpty()) {
             throw new BadRequestAppException("Account Owner name is required");
         }
-        if(owner.getLastName() == null || owner.getLastName().isEmpty()) {
+        if (owner.getLastName() == null || owner.getLastName().isEmpty()) {
             throw new BadRequestAppException("Account Owner lastName is required");
         }
         return ownerDao.create(owner);

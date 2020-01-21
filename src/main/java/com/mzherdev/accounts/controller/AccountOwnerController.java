@@ -12,7 +12,7 @@ import java.util.List;
 @Path("/owners")
 @Produces(MediaType.APPLICATION_JSON)
 public class AccountOwnerController {
-    
+
     private AccountOwnerService ownerService;
 
     public AccountOwnerController() {
