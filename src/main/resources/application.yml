@@ -1,0 +1,18 @@
+micronaut:
+  application:
+    name: money-transfer
+datasources:
+  default:
+    url: ${JDBC_URL:`jdbc:h2:mem:account_db;DB_CLOSE_DELAY=-1;INIT=RUNSCRIPT FROM 'classpath:data.sql'`}
+    username: ${JDBC_USER:sa}
+    password: ${JDBC_PASSWORD:""}
+    driverClassName: ${JDBC_DRIVER:org.h2.Driver}
+jpa:
+  default:
+    packages-to-scan:
+      - 'com.mzherdev.accounts.model'
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: update
+        show_sql: true

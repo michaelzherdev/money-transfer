@@ -2,7 +2,6 @@ package com.mzherdev.accounts.dao;
 
 import com.mzherdev.accounts.model.Account;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 public interface AccountDao {
@@ -11,11 +10,11 @@ public interface AccountDao {
 
     Account getById(int accountId);
 
+    List<Account> getByOwnerId(int ownerId);
+
     Account create(Account account);
 
     boolean delete(int accountId);
 
-    Account updateBalance(int accountId, BigDecimal amount);
-
-    boolean transfer(int accountFromId, int accountToId, BigDecimal amount);
+    Account update(Account account);
 }

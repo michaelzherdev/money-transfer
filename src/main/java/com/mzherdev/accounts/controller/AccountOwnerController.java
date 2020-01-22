@@ -1,48 +1,52 @@
 package com.mzherdev.accounts.controller;
 
+import com.mzherdev.accounts.model.Account;
 import com.mzherdev.accounts.model.AccountOwner;
 import com.mzherdev.accounts.service.AccountOwnerService;
-import com.mzherdev.accounts.util.ApplicationContext;
+import com.mzherdev.accounts.service.AccountService;
+import io.micronaut.http.HttpResponse;
+import io.micronaut.http.MediaType;
+import io.micronaut.http.annotation.*;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.inject.Inject;
 import java.util.List;
 
-@Path("/owners")
+@Controller("/owners")
 @Produces(MediaType.APPLICATION_JSON)
 public class AccountOwnerController {
 
     private AccountOwnerService ownerService;
+    private AccountService accountService;
 
-    public AccountOwnerController() {
-        ApplicationContext context = ApplicationContext.getInstance();
-        this.ownerService = context.getAccountOwnerService();
+    @Inject
+    public AccountOwnerController(AccountOwnerService ownerService, AccountService accountService) {
+        this.ownerService = ownerService;
+        this.accountService = accountService;
     }
 
-    @GET
+    @Get
     public List<AccountOwner> getAll() {
         return ownerService.getAll();
     }
 
-    @GET
-    @Path("/{id}")
-    public AccountOwner getAccount(@PathParam("id") int id) {
+    @Get("/{id}")
+    public AccountOwner get(int id) {
         return ownerService.getById(id);
     }
 
-    @POST
-    public AccountOwner createAccount(AccountOwner account) {
+    @Get("/{id}/accounts")
+    public List<Account> getOwnerAccounts(int id) {
+        return accountService.getByOwnerId(id);
+    }
+
+    @Post
+    public AccountOwner create(AccountOwner account) {
         return ownerService.create(account);
     }
 
-    @DELETE
-    @Path("/{id}")
-    public Response deleteAccount(@PathParam("id") int id) {
-        if (ownerService.delete(id)) {
-            return Response.status(Response.Status.OK).build();
-        } else {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
+    @Delete("/{id}")
+    public HttpResponse delete(int id) {
+        boolean deleted = ownerService.delete(id);
+        return deleted ? HttpResponse.ok() : HttpResponse.notFound();
     }
 }

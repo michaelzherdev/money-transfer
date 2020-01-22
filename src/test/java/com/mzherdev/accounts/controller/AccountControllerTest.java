@@ -2,333 +2,189 @@ package com.mzherdev.accounts.controller;
 
 import com.mzherdev.accounts.model.Account;
 import com.mzherdev.accounts.model.Currency;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.util.EntityUtils;
+import com.mzherdev.accounts.model.dto.AccountTransfer;
+import io.micronaut.core.type.Argument;
+import io.micronaut.http.HttpRequest;
+import io.micronaut.http.HttpResponse;
+import io.micronaut.http.HttpStatus;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AccountControllerTest extends AbstractControllerTest {
 
     @Test
-    public void testGetById() throws IOException, URISyntaxException {
-        URI uri = builder.setPath("/accounts/1").build();
-        HttpGet request = new HttpGet(uri);
-        HttpResponse response = client.execute(request);
-        int statusCode = response.getStatusLine().getStatusCode();
-
-        assertEquals(200, statusCode);
-        Account account = mapper.readValue(EntityUtils.toString(response.getEntity()), Account.class);
+    public void testGetById() {
+        HttpRequest request = HttpRequest.GET("/accounts/1");
+        Account account = client.toBlocking().retrieve(request, Account.class);
         assertEquals(1, account.getOwnerId());
-        assertEquals(new BigDecimal("100.00"), account.getAmount());
+        assertEquals(1, account.getId());
     }
 
     @Test
-    public void testGetAll() throws IOException, URISyntaxException {
-        URI uri = builder.setPath("/accounts").build();
-        HttpGet request = new HttpGet(uri);
-        HttpResponse response = client.execute(request);
-        int statusCode = response.getStatusLine().getStatusCode();
-
-        assertEquals(200, statusCode);
-        String jsonString = EntityUtils.toString(response.getEntity());
-        Account[] accounts = mapper.readValue(jsonString, Account[].class);
-        assertEquals(4, accounts.length);
+    public void testGetAll() {
+        HttpRequest request = HttpRequest.GET("/accounts");
+        List<Account> accounts = client.toBlocking().retrieve(request, Argument.of(List.class, Account.class));
+        assertEquals(4, accounts.size());
     }
 
     @Test
-    public void testCreateAccount() throws IOException, URISyntaxException {
-        URI uri = builder.setPath("/accounts").build();
-        Account account = new Account(BigDecimal.TEN, "USD", 5);
-        String jsonInString = mapper.writeValueAsString(account);
-        StringEntity entity = new StringEntity(jsonInString);
+    public void testCreateAccount() {
+        Account account = new Account(BigDecimal.TEN, "USD", 1);
+        HttpRequest request = HttpRequest.POST("/accounts", account);
+        HttpResponse response = client.toBlocking().exchange(request, Account.class);
+        account = (Account) response.getBody().get();
 
-        HttpPost request = new HttpPost(uri);
-        request.setHeader("Content-type", "application/json");
-        request.setEntity(entity);
-        HttpResponse response = client.execute(request);
-        int statusCode = response.getStatusLine().getStatusCode();
-
-        assertEquals(200, statusCode);
-        String jsonString = EntityUtils.toString(response.getEntity());
-        Account afterCreation = mapper.readValue(jsonString, Account.class);
-        assertEquals(5, afterCreation.getOwnerId());
-        assertEquals(Currency.USD.name(), afterCreation.getCurrencyCode());
+        assertEquals(5, account.getId());
+        assertEquals(1, account.getOwnerId());
+        assertEquals(Currency.USD.name(), account.getCurrencyCode());
     }
 
     @Test
-    public void testCreateAccountWithNegativeBalance() throws IOException, URISyntaxException {
-        URI uri = builder.setPath("/accounts").build();
-        Account acc = new Account(BigDecimal.ONE.negate(), "USD", 1);
-        String jsonInString = mapper.writeValueAsString(acc);
-        StringEntity entity = new StringEntity(jsonInString);
-        HttpPost request = new HttpPost(uri);
-        request.setHeader("Content-type", "application/json");
-        request.setEntity(entity);
-        HttpResponse response = client.execute(request);
-        int statusCode = response.getStatusLine().getStatusCode();
-        assertEquals(400, statusCode);
-        assertEquals("Balance is negative", EntityUtils.toString(response.getEntity()));
+    public void testCreateAccountWithUnExistedOwner() {
+        Account account = new Account(BigDecimal.TEN, "USD", 100);
+        HttpRequest request = HttpRequest.POST("/accounts", account);
+        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST);
     }
 
     @Test
-    public void testCreateAccountWithUnexistedCurrencyBalance() throws IOException, URISyntaxException {
-        URI uri = builder.setPath("/accounts").build();
-        Account acc = new Account(BigDecimal.ONE, "RUS", 1);
-        String jsonInString = mapper.writeValueAsString(acc);
-        StringEntity entity = new StringEntity(jsonInString);
-        HttpPost request = new HttpPost(uri);
-        request.setHeader("Content-type", "application/json");
-        request.setEntity(entity);
-        HttpResponse response = client.execute(request);
-        int statusCode = response.getStatusLine().getStatusCode();
-        assertEquals(400, statusCode);
-        assertEquals("Currency not valid", EntityUtils.toString(response.getEntity()));
+    public void testCreateAccountWithNegativeBalance() {
+        Account account = new Account(BigDecimal.ONE.negate(), "USD", 1);
+        HttpRequest request = HttpRequest.POST("/accounts", account);
+        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST);
     }
 
     @Test
-    public void testDeleteAccount() throws IOException, URISyntaxException {
-        URI uri = builder.setPath("/accounts/2").build();
-        HttpDelete request = new HttpDelete(uri);
-        request.setHeader("Content-type", "application/json");
-        HttpResponse response = client.execute(request);
-        int statusCode = response.getStatusLine().getStatusCode();
-        assertEquals(200, statusCode);
+    public void testCreateAccountWithUnexistedCurrencyBalance() {
+        Account account = new Account(BigDecimal.ONE, "RUS", 1);
+        HttpRequest request = HttpRequest.POST("/accounts", account);
+        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST);
     }
 
     @Test
-    public void testDeleteNonExistingAccount() throws IOException, URISyntaxException {
-        URI uri = builder.setPath("/accounts/200").build();
-        HttpDelete request = new HttpDelete(uri);
-        request.setHeader("Content-type", "application/json");
-        HttpResponse response = client.execute(request);
-        int statusCode = response.getStatusLine().getStatusCode();
-        assertEquals(404, statusCode);
+    public void testDeleteAccount() {
+        HttpRequest request = HttpRequest.DELETE("/accounts/2");
+        HttpResponse response = client.toBlocking().exchange(request);
+        assertEquals(HttpStatus.OK, response.getStatus());
     }
 
     @Test
-    public void testDepositSuccessful() throws IOException, URISyntaxException {
-        URI uri = builder.setPath("/accounts/1").build();
-        HttpGet request = new HttpGet(uri);
-        HttpResponse response = client.execute(request);
-        int statusCode = response.getStatusLine().getStatusCode();
+    public void testDeleteNonExistingAccount() {
+        performRequestAndAssertBadStatus(HttpRequest.DELETE("/accounts/200"), HttpStatus.NOT_FOUND);
+    }
 
-        assertEquals(200, statusCode);
-        Account account = mapper.readValue(EntityUtils.toString(response.getEntity()), Account.class);
+    @Test
+    public void testDepositSuccessful() {
+        HttpRequest request = HttpRequest.GET("/accounts/3");
+        Account account = client.toBlocking().retrieve(request, Account.class);
+        assertEquals(3, account.getOwnerId());
+        assertEquals(new BigDecimal("300.00"), account.getAmount());
+
+        request = HttpRequest.PUT("/accounts/3/deposit/10", account);
+        account = client.toBlocking().retrieve(request, Account.class);
+        assertEquals(3, account.getOwnerId());
+        assertEquals(new BigDecimal("310.00"), account.getAmount());
+    }
+
+    @Test
+    public void testDepositWithZeroAmount() {
+        HttpRequest request = HttpRequest.GET("/accounts/1");
+        Account account = client.toBlocking().retrieve(request, Account.class);
+
+        HttpRequest putRequest = HttpRequest.PUT("/accounts/1/deposit/0", account);
+        performRequestAndAssertBadStatus(putRequest, HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void testDepositNotExistedAccount() {
+        HttpRequest request = HttpRequest.GET("/accounts/1");
+        Account account = client.toBlocking().retrieve(request, Account.class);
+
+        HttpRequest putRequest = HttpRequest.PUT("/accounts/100/deposit/10", account);
+        performRequestAndAssertBadStatus(putRequest, HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    public void testWithdrawSuccessful() {
+        HttpRequest request = HttpRequest.GET("/accounts/1");
+        Account account = client.toBlocking().retrieve(request, Account.class);
         assertEquals(1, account.getOwnerId());
         assertEquals(new BigDecimal("100.00"), account.getAmount());
 
-        uri = builder.setPath("/accounts/1/deposit/10")
-                .build();
-        HttpPut depositRequest = new HttpPut(uri);
-        depositRequest.setHeader("Content-type", "application/json");
-        response = client.execute(depositRequest);
-        statusCode = response.getStatusLine().getStatusCode();
-
-        assertEquals(200, statusCode);
-        String jsonString = EntityUtils.toString(response.getEntity());
-        account = mapper.readValue(jsonString, Account.class);
-        assertEquals(new BigDecimal("110.00"), account.getAmount());
-    }
-
-    @Test
-    public void testDepositWithZeroAmount() throws IOException, URISyntaxException {
-        URI uri = builder.setPath("/accounts/1/deposit/0")
-                .build();
-        HttpPut depositRequest = new HttpPut(uri);
-        depositRequest.setHeader("Content-type", "application/json");
-        HttpResponse response = client.execute(depositRequest);
-        int statusCode = response.getStatusLine().getStatusCode();
-
-        assertEquals(400, statusCode);
-        assertEquals("Invalid Deposit amount", EntityUtils.toString(response.getEntity()));
-    }
-
-    @Test
-    public void testDepositNotExistedAccount() throws IOException, URISyntaxException {
-        URI uri = builder.setPath("/accounts/100/deposit/10")
-                .build();
-        HttpPut depositRequest = new HttpPut(uri);
-        depositRequest.setHeader("Content-type", "application/json");
-        HttpResponse response = client.execute(depositRequest);
-        int statusCode = response.getStatusLine().getStatusCode();
-
-        assertEquals(400, statusCode);
-        assertEquals("Account not exist: 100", EntityUtils.toString(response.getEntity()));
-    }
-
-    @Test
-    public void testWithdrawSuccessful() throws IOException, URISyntaxException {
-        URI uri = builder.setPath("/accounts/1").build();
-        HttpGet request = new HttpGet(uri);
-        HttpResponse response = client.execute(request);
-        int statusCode = response.getStatusLine().getStatusCode();
-
-        assertEquals(200, statusCode);
-        Account account = mapper.readValue(EntityUtils.toString(response.getEntity()), Account.class);
+        request = HttpRequest.PUT("/accounts/1/withdraw/10", account);
+        account = client.toBlocking().retrieve(request, Account.class);
         assertEquals(1, account.getOwnerId());
-        assertEquals(new BigDecimal("100.00"), account.getAmount());
-
-        uri = builder.setPath("/accounts/1/withdraw/10")
-                .build();
-        HttpPut depositRequest = new HttpPut(uri);
-        depositRequest.setHeader("Content-type", "application/json");
-        response = client.execute(depositRequest);
-        statusCode = response.getStatusLine().getStatusCode();
-
-        assertEquals(200, statusCode);
-        String jsonString = EntityUtils.toString(response.getEntity());
-        account = mapper.readValue(jsonString, Account.class);
         assertEquals(new BigDecimal("90.00"), account.getAmount());
     }
 
     @Test
-    public void testWithdrawWithZeroAmount() throws IOException, URISyntaxException {
-        URI uri = builder.setPath("/accounts/1/withdraw/0")
-                .build();
-        HttpPut depositRequest = new HttpPut(uri);
-        depositRequest.setHeader("Content-type", "application/json");
-        HttpResponse response = client.execute(depositRequest);
-        int statusCode = response.getStatusLine().getStatusCode();
+    public void testWithdrawWithZeroAmount() {
+        HttpRequest request = HttpRequest.GET("/accounts/1");
+        Account account = client.toBlocking().retrieve(request, Account.class);
 
-        assertEquals(400, statusCode);
-        assertEquals("Invalid Withdraw amount", EntityUtils.toString(response.getEntity()));
+        HttpRequest putRequest = HttpRequest.PUT("/accounts/1/withdraw/0", account);
+        performRequestAndAssertBadStatus(putRequest, HttpStatus.BAD_REQUEST);
     }
 
     @Test
-    public void testWithdrawNotExistedAccount() throws IOException, URISyntaxException {
-        URI uri = builder.setPath("/accounts/100/withdraw/10")
-                .build();
-        HttpPut depositRequest = new HttpPut(uri);
-        depositRequest.setHeader("Content-type", "application/json");
-        HttpResponse response = client.execute(depositRequest);
-        int statusCode = response.getStatusLine().getStatusCode();
+    public void testWithdrawNotExistedAccount() {
+        HttpRequest request = HttpRequest.GET("/accounts/1");
+        Account account = client.toBlocking().retrieve(request, Account.class);
 
-        assertEquals(400, statusCode);
-        assertEquals("Account not exist: 100", EntityUtils.toString(response.getEntity()));
+        HttpRequest putRequest = HttpRequest.PUT("/accounts/100/withdraw/10", account);
+        performRequestAndAssertBadStatus(putRequest, HttpStatus.BAD_REQUEST);
     }
 
     @Test
-    public void testTransferBetweenAcconts() throws IOException, URISyntaxException {
-        URI uri = builder.setPath("/accounts/transfer")
-                .addParameter("accountFromId", "1")
-                .addParameter("accountToId", "2")
-                .addParameter("amount", "50")
-                .build();
-        HttpPut request = new HttpPut(uri);
-        request.setHeader("Content-type", "application/json");
-        HttpResponse response = client.execute(request);
-        int statusCode = response.getStatusLine().getStatusCode();
-
-        assertEquals(200, statusCode);
-        String jsonString = EntityUtils.toString(response.getEntity());
-        assertTrue(mapper.readValue(jsonString, Boolean.class));
+    public void testTransferBetweenAccounts() {
+        AccountTransfer transfer = new AccountTransfer(1, 2, new BigDecimal("50.00"));
+        HttpRequest request = HttpRequest.PUT("/accounts/transfer", transfer);
+        HttpResponse response = client.toBlocking().exchange(request);
+        assertEquals(HttpStatus.OK, response.getStatus());
     }
 
     @Test
-    public void testTransferBetweenAccountsWithZeroAmount() throws IOException, URISyntaxException {
-        URI uri = builder.setPath("/accounts/transfer")
-                .addParameter("accountFromId", "1")
-                .addParameter("accountToId", "2")
-                .addParameter("amount", "0")
-                .build();
-        HttpPut request = new HttpPut(uri);
-        request.setHeader("Content-type", "application/json");
-        HttpResponse response = client.execute(request);
-        int statusCode = response.getStatusLine().getStatusCode();
-
-        assertEquals(400, statusCode);
-        assertEquals("Invalid Transfer amount", EntityUtils.toString(response.getEntity()));
+    public void testTransferBetweenAccountsWithZeroAmount() {
+        AccountTransfer transfer = new AccountTransfer(1, 2, new BigDecimal("0.00"));
+        HttpRequest request = HttpRequest.PUT("/accounts/transfer", transfer);
+        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST);
     }
 
     @Test
-    public void testTransferOnSameAccount() throws IOException, URISyntaxException {
-        URI uri = builder.setPath("/accounts/transfer")
-                .addParameter("accountFromId", "1")
-                .addParameter("accountToId", "1")
-                .addParameter("amount", "100")
-                .build();
-        HttpPut request = new HttpPut(uri);
-        request.setHeader("Content-type", "application/json");
-        HttpResponse response = client.execute(request);
-        int statusCode = response.getStatusLine().getStatusCode();
-
-        assertEquals(400, statusCode);
-        assertEquals("Impossible to transfer money on the same account", EntityUtils.toString(response.getEntity()));
+    public void testTransferOnSameAccount() {
+        AccountTransfer transfer = new AccountTransfer(1, 1, new BigDecimal("50.00"));
+        HttpRequest request = HttpRequest.PUT("/accounts/transfer", transfer);
+        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST);
     }
 
     @Test
-    public void testTransferBetweenAccountsWithDifferentCurrencies() throws IOException, URISyntaxException {
-        URI uri = builder.setPath("/accounts/transfer")
-                .addParameter("accountFromId", "1")
-                .addParameter("accountToId", "3")
-                .addParameter("amount", "100")
-                .build();
-        HttpPut request = new HttpPut(uri);
-        request.setHeader("Content-type", "application/json");
-        HttpResponse response = client.execute(request);
-        int statusCode = response.getStatusLine().getStatusCode();
-
-        assertEquals(400, statusCode);
-        assertEquals("Transaction currency are different between accounts", EntityUtils.toString(response.getEntity()));
+    public void testTransferBetweenAccountsWithDifferentCurrencies() {
+        AccountTransfer transfer = new AccountTransfer(1, 3, new BigDecimal("50.00"));
+        HttpRequest request = HttpRequest.PUT("/accounts/transfer", transfer);
+        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST);
     }
 
     @Test
-    public void testTransferBetweenAccountsFromNotExisted() throws IOException, URISyntaxException {
-        URI uri = builder.setPath("/accounts/transfer")
-                .addParameter("accountFromId", "100")
-                .addParameter("accountToId", "1")
-                .addParameter("amount", "100")
-                .build();
-        HttpPut request = new HttpPut(uri);
-        request.setHeader("Content-type", "application/json");
-        HttpResponse response = client.execute(request);
-        int statusCode = response.getStatusLine().getStatusCode();
-
-        assertEquals(400, statusCode);
-        assertEquals("From account not exists : 100", EntityUtils.toString(response.getEntity()));
+    public void testTransferBetweenAccountsFromNotExisted() {
+        AccountTransfer transfer = new AccountTransfer(100, 2, new BigDecimal("50.00"));
+        HttpRequest request = HttpRequest.PUT("/accounts/transfer", transfer);
+        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST);
     }
 
     @Test
-    public void testTransferBetweenAccountsToNotExisted() throws IOException, URISyntaxException {
-        URI uri = builder.setPath("/accounts/transfer")
-                .addParameter("accountFromId", "1")
-                .addParameter("accountToId", "100")
-                .addParameter("amount", "100")
-                .build();
-        HttpPut request = new HttpPut(uri);
-        request.setHeader("Content-type", "application/json");
-        HttpResponse response = client.execute(request);
-        int statusCode = response.getStatusLine().getStatusCode();
-
-        assertEquals(400, statusCode);
-        assertEquals("To account not exists : 100", EntityUtils.toString(response.getEntity()));
+    public void testTransferBetweenAccountsToNotExisted() {
+        AccountTransfer transfer = new AccountTransfer(1, 100, new BigDecimal("50.00"));
+        HttpRequest request = HttpRequest.PUT("/accounts/transfer", transfer);
+        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST);
     }
 
     @Test
-    public void testTransferBetweenAccountsWithInsufficientAmount() throws IOException, URISyntaxException {
-        URI uri = builder.setPath("/accounts/transfer")
-                .addParameter("accountFromId", "1")
-                .addParameter("accountToId", "2")
-                .addParameter("amount", "500")
-                .build();
-        HttpPut request = new HttpPut(uri);
-        request.setHeader("Content-type", "application/json");
-        HttpResponse response = client.execute(request);
-        int statusCode = response.getStatusLine().getStatusCode();
-
-        assertEquals(400, statusCode);
-        assertEquals("Not enough money on From account: 1", EntityUtils.toString(response.getEntity()));
+    public void testTransferBetweenAccountsWithInsufficientAmount() {
+        AccountTransfer transfer = new AccountTransfer(1, 2, new BigDecimal("500.00"));
+        HttpRequest request = HttpRequest.PUT("/accounts/transfer", transfer);
+        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST);
     }
 }

@@ -1,15 +1,15 @@
 package com.mzherdev.accounts.exception;
 
-import javax.ws.rs.core.Response;
+import io.micronaut.http.HttpStatus;
 
 public class AccountAppException extends RuntimeException {
-    protected Response.Status status;
+    protected HttpStatus status;
 
     public AccountAppException(String message) {
         super(message);
     }
 
-    public Response.Status getStatus() {
+    public HttpStatus getStatus() {
         return status;
     }
 }

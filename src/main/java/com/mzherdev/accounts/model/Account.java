@@ -1,16 +1,23 @@
 package com.mzherdev.accounts.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
+@Entity
+@Table(name = "Account")
 public class Account {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    @JsonProperty(required = true)
+    @NotNull
+    @Column(name = "amount", nullable = false)
     private BigDecimal amount;
-    @JsonProperty(required = true)
+    @NotNull
+    @Column(name = "currencyCode", nullable = false)
     private String currencyCode;
-    @JsonProperty(required = true)
+    @NotNull
+    @Column(name = "ownerId", nullable = false)
     private int ownerId;
 
     public Account() {

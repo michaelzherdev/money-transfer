@@ -1,11 +1,11 @@
 package com.mzherdev.accounts.exception;
 
-import javax.ws.rs.core.Response;
+import io.micronaut.http.HttpStatus;
 
 public class BadRequestAppException extends AccountAppException {
 
     public BadRequestAppException(String message) {
         super(message);
-        status = Response.Status.BAD_REQUEST;
+        status = HttpStatus.BAD_REQUEST;
     }
 }

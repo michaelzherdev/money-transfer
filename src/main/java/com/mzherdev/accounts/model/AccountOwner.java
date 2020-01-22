@@ -1,13 +1,20 @@
 package com.mzherdev.accounts.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
+@Entity
+@Table(name = "AccountOwner")
 public class AccountOwner {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    @JsonProperty(required = true)
+    @NotNull
+    @Column(name = "name", nullable = false)
     private String name;
-    @JsonProperty(required = true)
+    @NotNull
+    @Column(name = "lastName", nullable = false)
     private String lastName;
 
     public AccountOwner() {

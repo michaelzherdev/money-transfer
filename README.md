@@ -1,4 +1,4 @@
-## Backend Test
+## Money Transfer API
 
 Design and implement a RESTful API (including data model and the backing implementation) for
 money transfers between accounts.
@@ -18,12 +18,10 @@ Implicit requirements:
 1. The code produced by you is expected to be of high quality.
 2. There are no detailed requirements, use common sense.
 
-Please put your work on github or bitbucket.
-
 
 ### How to run
 ```sh
-./mvnw clean install exec:java
+./gradlew run
 ```
 
 ### Endpoints
@@ -39,6 +37,7 @@ Please put your work on github or bitbucket.
 | DELETE | /accounts/{id} | delete account by id | 
 | GET | /owners | get all account owners | 
 | GET | /owners/{id} | get account owner by id | 
+| GET | /owners/{id}/accounts | get owner accounts by owner id | 
 | POST | /owners | create a new owner | 
 | DELETE | /owner/{id} | delete owner | 
 
@@ -58,3 +57,14 @@ Account
 "ownerId": 2
 }
 ```
+AccountTransfer
+```json
+{
+"accountFromId":1,
+"accountToId":2,
+"amount": 50.00
+}
+```
+
+#### Technogies Used
+Java8, Micronaut, Gradle, JUnit5

@@ -19,5 +19,7 @@ public interface AccountService {
 
     Account getById(int accountId);
 
+    List<Account> getByOwnerId(int ownerId);
+
     boolean delete(int accountId);
 }

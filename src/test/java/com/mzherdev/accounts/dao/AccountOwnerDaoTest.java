@@ -1,27 +1,19 @@
 package com.mzherdev.accounts.dao;
 
+import com.mzherdev.accounts.AccountApplication;
 import com.mzherdev.accounts.model.AccountOwner;
-import com.mzherdev.accounts.util.DBHelper;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
+import io.micronaut.test.annotation.MicronautTest;
 import org.junit.jupiter.api.Test;
 
+import javax.inject.Inject;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@MicronautTest(application = AccountApplication.class)
 public class AccountOwnerDaoTest {
-    private static AccountOwnerDao accountOwnerDao;
-
-    @BeforeAll
-    public static void setup() {
-        accountOwnerDao = new AccountOwnerDaoImpl();
-    }
-
-    @BeforeEach
-    public void beforeEach() {
-        DBHelper.populateTestData();
-    }
+    @Inject
+    private AccountOwnerDao accountOwnerDao;
 
     @Test
     public void testGetAll() {
@@ -30,7 +22,7 @@ public class AccountOwnerDaoTest {
     }
 
     @Test
-    public void testGetAccountById() {
+    public void testGetById() {
         AccountOwner account = accountOwnerDao.getById(1);
         assertEquals(account.getName(), "test1");
         assertEquals(account.getLastName(), "test111");
@@ -53,12 +45,14 @@ public class AccountOwnerDaoTest {
     @Test
     public void testDeleteAccount() {
         assertNotNull(accountOwnerDao.getById(2));
-        assertTrue(accountOwnerDao.delete(2));
+        accountOwnerDao.delete(2);
         assertNull(accountOwnerDao.getById(2));
     }
 
     @Test
     public void testDeleteNonExistingAccount() {
-        assertFalse(accountOwnerDao.delete(200));
+        assertNull(accountOwnerDao.getById(200));
+        accountOwnerDao.delete(200);
+        assertNull(accountOwnerDao.getById(200));
     }
 }
