@@ -69,7 +69,7 @@ public class AccountControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void testCreateAccountWithUniexistedOwner() throws IOException, URISyntaxException {
+    public void testCreateAccountWithUnExistedOwner() throws IOException, URISyntaxException {
         URI uri = builder.setPath("/accounts").build();
         Account acc = new Account(BigDecimal.ONE, "USD", 100);
         String jsonInString = mapper.writeValueAsString(acc);
@@ -99,7 +99,7 @@ public class AccountControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void testCreateAccountWithUnexistedCurrencyBalance() throws IOException, URISyntaxException {
+    public void testCreateAccountWithUnExistedCurrencyBalance() throws IOException, URISyntaxException {
         URI uri = builder.setPath("/accounts").build();
         Account acc = new Account(BigDecimal.ONE, "RUS", 1);
         String jsonInString = mapper.writeValueAsString(acc);

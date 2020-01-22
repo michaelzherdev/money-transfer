@@ -57,7 +57,7 @@ public class AccountOwnerControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void testCreateAccount() throws IOException, URISyntaxException {
+    public void testCreateAccountOwner() throws IOException, URISyntaxException {
         URI uri = builder.setPath("/owners").build();
         AccountOwner account = new AccountOwner("new1", "new111");
         String jsonInString = mapper.writeValueAsString(account);
@@ -78,7 +78,7 @@ public class AccountOwnerControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void testCreateAccountWithEmptyName() throws IOException, URISyntaxException {
+    public void testCreateAccountOwnerWithEmptyName() throws IOException, URISyntaxException {
         URI uri = builder.setPath("/owners").build();
         AccountOwner acc = new AccountOwner(null, "lastName");
         String jsonInString = mapper.writeValueAsString(acc);
@@ -93,7 +93,7 @@ public class AccountOwnerControllerTest extends AbstractControllerTest {
     }
 
     @Test
-    public void testCreateAccountWithEmptyLastName() throws IOException, URISyntaxException {
+    public void testCreateAccountOwnerWithEmptyLastName() throws IOException, URISyntaxException {
         URI uri = builder.setPath("/owners").build();
         AccountOwner acc = new AccountOwner("name", "");
         String jsonInString = mapper.writeValueAsString(acc);
@@ -109,8 +109,8 @@ public class AccountOwnerControllerTest extends AbstractControllerTest {
 
 
     @Test
-    public void testDeleteAccount() throws IOException, URISyntaxException {
-        URI uri = builder.setPath("/owners/2").build();
+    public void testDelete() throws IOException, URISyntaxException {
+        URI uri = builder.setPath("/owners/4").build();
         HttpDelete request = new HttpDelete(uri);
         request.setHeader("Content-type", "application/json");
         HttpResponse response = client.execute(request);
@@ -126,5 +126,16 @@ public class AccountOwnerControllerTest extends AbstractControllerTest {
         HttpResponse response = client.execute(request);
         int statusCode = response.getStatusLine().getStatusCode();
         assertEquals(404, statusCode);
+    }
+
+    @Test
+    public void testDeleteWithAccounts() throws IOException, URISyntaxException {
+        URI uri = builder.setPath("/owners/1").build();
+        HttpDelete request = new HttpDelete(uri);
+        request.setHeader("Content-type", "application/json");
+        HttpResponse response = client.execute(request);
+        int statusCode = response.getStatusLine().getStatusCode();
+        assertEquals(400, statusCode);
+        assertEquals("Owner has opened accounts, cannot be removed", EntityUtils.toString(response.getEntity()));
     }
 }

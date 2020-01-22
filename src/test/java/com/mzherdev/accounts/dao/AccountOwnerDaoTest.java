@@ -30,19 +30,19 @@ public class AccountOwnerDaoTest {
     }
 
     @Test
-    public void testGetAccountById() {
+    public void testGetById() {
         AccountOwner account = accountOwnerDao.getById(1);
         assertEquals(account.getName(), "test1");
         assertEquals(account.getLastName(), "test111");
     }
 
     @Test
-    public void testGetNonExistedAccountById() {
+    public void testGetByNonExistedId() {
         assertNull(accountOwnerDao.getById(100));
     }
 
     @Test
-    public void testCreateAccount() {
+    public void testCreateAccountOwner() {
         AccountOwner a = new AccountOwner("new1", "new111");
         AccountOwner account = accountOwnerDao.create(a);
         assertEquals(5, account.getId());
@@ -51,14 +51,14 @@ public class AccountOwnerDaoTest {
     }
 
     @Test
-    public void testDeleteAccount() {
+    public void testDeleteAccountOwner() {
         assertNotNull(accountOwnerDao.getById(2));
         assertTrue(accountOwnerDao.delete(2));
         assertNull(accountOwnerDao.getById(2));
     }
 
     @Test
-    public void testDeleteNonExistingAccount() {
+    public void testDeleteNonExistingAccountOwner() {
         assertFalse(accountOwnerDao.delete(200));
     }
 }

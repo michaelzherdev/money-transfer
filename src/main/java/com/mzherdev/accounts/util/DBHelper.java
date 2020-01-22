@@ -33,7 +33,7 @@ public class DBHelper {
 
     public static void populateTestData() {
         try (Connection connection = getConnection()) {
-            RunScript.execute(connection, new FileReader("src/main/resources/populateDb.sql"));
+            RunScript.execute(connection, new FileReader("src/main/resources/data.sql"));
         } catch (FileNotFoundException | SQLException e) {
             log.error("Error reading file: ", e);
             throw new RuntimeException(e);

@@ -1,7 +1,9 @@
 package com.mzherdev.accounts.service;
 
+import com.mzherdev.accounts.dao.AccountDao;
 import com.mzherdev.accounts.dao.AccountOwnerDao;
 import com.mzherdev.accounts.exception.BadRequestAppException;
+import com.mzherdev.accounts.model.Account;
 import com.mzherdev.accounts.model.AccountOwner;
 
 import java.util.List;
@@ -9,9 +11,11 @@ import java.util.List;
 public class AccountOwnerServiceImpl implements AccountOwnerService {
 
     private AccountOwnerDao ownerDao;
+    private AccountDao accountDao;
 
-    public AccountOwnerServiceImpl(AccountOwnerDao ownerDao) {
+    public AccountOwnerServiceImpl(AccountOwnerDao ownerDao, AccountDao accountDao) {
         this.ownerDao = ownerDao;
+        this.accountDao = accountDao;
     }
 
     @Override
@@ -37,6 +41,10 @@ public class AccountOwnerServiceImpl implements AccountOwnerService {
 
     @Override
     public boolean delete(int id) {
+        List<Account> accounts = accountDao.getByOwnerId(id);
+        if (accounts != null && !accounts.isEmpty()) {
+            throw new BadRequestAppException("Owner has opened accounts, cannot be removed");
+        }
         return ownerDao.delete(id);
     }
 }

@@ -50,7 +50,7 @@ public final class ApplicationContext {
 
     public AccountOwnerService getAccountOwnerService() {
         if (accountOwnerService == null) {
-            accountOwnerService = new AccountOwnerServiceImpl(getAccountOwnerDao());
+            accountOwnerService = new AccountOwnerServiceImpl(getAccountOwnerDao(), getAccountDao());
         }
         return accountOwnerService;
     }

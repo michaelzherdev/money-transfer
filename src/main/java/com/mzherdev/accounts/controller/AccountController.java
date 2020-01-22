@@ -28,12 +28,12 @@ public class AccountController {
 
     @GET
     @Path("/{id}")
-    public Account getAccount(@PathParam("id") int accountId) {
+    public Account get(@PathParam("id") int accountId) {
         return accountService.getById(accountId);
     }
 
     @POST
-    public Account createAccount(Account account) {
+    public Account create(Account account) {
         return accountService.create(account);
     }
 

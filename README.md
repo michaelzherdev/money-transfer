@@ -1,4 +1,4 @@
-## Backend Test
+## Money Transfer API
 
 Design and implement a RESTful API (including data model and the backing implementation) for
 money transfers between accounts.
@@ -17,8 +17,6 @@ pre-installed container/server).
 Implicit requirements:
 1. The code produced by you is expected to be of high quality.
 2. There are no detailed requirements, use common sense.
-
-Please put your work on github or bitbucket.
 
 
 ### How to run
@@ -59,3 +57,6 @@ Account
 "ownerId": 2
 }
 ```
+
+#### Technologies Used
+Java8, Jersey, Jetty, JUnit5
