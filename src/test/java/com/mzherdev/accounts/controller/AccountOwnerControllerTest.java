@@ -1,5 +1,6 @@
 package com.mzherdev.accounts.controller;
 
+import com.mzherdev.accounts.model.Account;
 import com.mzherdev.accounts.model.AccountOwner;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpDelete;
@@ -29,6 +30,17 @@ public class AccountOwnerControllerTest extends AbstractControllerTest {
         assertEquals(1, account.getId());
         assertEquals("test1", account.getName());
         assertEquals("test111", account.getLastName());
+    }
+    @Test
+    public void testGetAccounts() throws IOException, URISyntaxException {
+        URI uri = builder.setPath("/owners/3/accounts").build();
+        HttpGet request = new HttpGet(uri);
+        HttpResponse response = client.execute(request);
+        int statusCode = response.getStatusLine().getStatusCode();
+
+        assertEquals(200, statusCode);
+        Account[] accounts = mapper.readValue(EntityUtils.toString(response.getEntity()), Account[].class);
+        assertEquals(2, accounts.length);
     }
 
     @Test

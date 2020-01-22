@@ -20,6 +20,7 @@ public class AccountDaoImpl implements AccountDao {
 
     private final static String GET_ALL_SQL = "SELECT * FROM Account";
     private final static String GET_BY_ID_SQL = "SELECT * FROM Account WHERE id = ?";
+    private final static String GET_BY_OWNER_ID_SQL = "SELECT * FROM Account WHERE ownerId = ?";
     private final static String CREATE_ACCOUNT_SQL = "INSERT INTO Account (amount, currencyCode, ownerId) VALUES (?, ?, ?)";
     private final static String DELETE_ACCOUNT_SQL = "DELETE FROM Account WHERE id = ?";
     private final static String LOCK_ACC_BY_ID_SQL = GET_BY_ID_SQL + " FOR UPDATE";
@@ -59,6 +60,25 @@ public class AccountDaoImpl implements AccountDao {
             throw new AccountAppException(e.getMessage());
         }
         return account;
+    }
+
+    @Override
+    public List<Account> getByOwnerId(int ownerId) {
+        List<Account> accounts = new ArrayList<>();
+        try (Connection connection = DBHelper.getConnection();
+             PreparedStatement statement = connection.prepareStatement(GET_BY_OWNER_ID_SQL)) {
+            statement.setLong(1, ownerId);
+            ResultSet rs = statement.executeQuery();
+            while (rs.next()) {
+                Account account = new Account(rs.getInt("id"), rs.getBigDecimal("amount"),
+                        rs.getString("currencyCode"), rs.getInt("ownerId"));
+                accounts.add(account);
+            }
+        } catch (SQLException e) {
+            log.error("SQLException ", e);
+            throw new AccountAppException(e.getMessage());
+        }
+        return accounts;
     }
 
     @Override
@@ -129,7 +149,6 @@ public class AccountDaoImpl implements AccountDao {
             if (updatedCount > 0) {
                 account = getById(accountId);
             }
-            ;
         } catch (SQLException e) {
             log.error("SQLException ", e);
             throw new AccountAppException(e.getMessage());
@@ -139,7 +158,7 @@ public class AccountDaoImpl implements AccountDao {
 
     @Override
     public boolean transfer(int accountFromId, int accountToId, BigDecimal amount) {
-        int result = -1;
+        int result;
         try (Connection connection = DBHelper.getConnection();
              PreparedStatement lockStatement = connection.prepareStatement(LOCK_ACC_BY_ID_SQL);
              PreparedStatement updateStatement = connection.prepareStatement(UPDATE_ACCOUNT_SQL)) {
@@ -147,7 +166,7 @@ public class AccountDaoImpl implements AccountDao {
 
             lockStatement.setLong(1, accountFromId);
             ResultSet rs = lockStatement.executeQuery();
-            Account from = null;
+            Account from;
             if (rs.next()) {
                 from = new Account(rs.getInt("id"), rs.getBigDecimal("amount"),
                         rs.getString("currencyCode"), rs.getInt("ownerId"));
@@ -157,7 +176,7 @@ public class AccountDaoImpl implements AccountDao {
 
             lockStatement.setLong(1, accountToId);
             rs = lockStatement.executeQuery();
-            Account to = null;
+            Account to;
             if (rs.next()) {
                 to = new Account(rs.getInt("id"), rs.getBigDecimal("amount"),
                         rs.getString("currencyCode"), rs.getInt("ownerId"));

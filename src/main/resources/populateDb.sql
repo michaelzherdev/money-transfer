@@ -20,4 +20,4 @@ currencyCode VARCHAR(30)
 INSERT INTO Account (ownerId,amount,currencyCode) VALUES (1,100.00,'USD');
 INSERT INTO Account (ownerId,amount,currencyCode) VALUES (2,200.00,'USD');
 INSERT INTO Account (ownerId,amount,currencyCode) VALUES (3,300.00,'EUR');
-INSERT INTO Account (ownerId,amount,currencyCode) VALUES (4,400.00,'RUB');
+INSERT INTO Account (ownerId,amount,currencyCode) VALUES (3,400.00,'RUB');

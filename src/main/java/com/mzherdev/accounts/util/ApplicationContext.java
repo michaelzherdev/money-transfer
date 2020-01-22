@@ -43,7 +43,7 @@ public final class ApplicationContext {
 
     public AccountService getAccountService() {
         if (accountService == null) {
-            accountService = new AccountServiceImpl(getAccountDao());
+            accountService = new AccountServiceImpl(getAccountDao(), getAccountOwnerDao());
         }
         return accountService;
     }

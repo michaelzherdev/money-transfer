@@ -47,6 +47,12 @@ public class AccountDaoTest {
     }
 
     @Test
+    public void testGetAccountsByOwnerId() {
+        List<Account> accounts = accountDao.getByOwnerId(3);
+        assertEquals(2, accounts.size());
+    }
+
+    @Test
     public void testCreateAccount() {
         Account a = new Account(BigDecimal.TEN, "USD", 5);
         Account account = accountDao.create(a);

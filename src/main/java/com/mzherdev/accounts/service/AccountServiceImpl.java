@@ -1,6 +1,7 @@
 package com.mzherdev.accounts.service;
 
 import com.mzherdev.accounts.dao.AccountDao;
+import com.mzherdev.accounts.dao.AccountOwnerDao;
 import com.mzherdev.accounts.exception.BadRequestAppException;
 import com.mzherdev.accounts.model.Account;
 import com.mzherdev.accounts.model.Currency;
@@ -11,12 +12,17 @@ import java.util.List;
 public class AccountServiceImpl implements AccountService {
 
     private final AccountDao accountDao;
+    private final AccountOwnerDao accountOwnerDao;
 
-    public AccountServiceImpl(AccountDao accountDao) {
+    public AccountServiceImpl(AccountDao accountDao, AccountOwnerDao accountOwnerDao) {
         this.accountDao = accountDao;
+        this.accountOwnerDao = accountOwnerDao;
     }
 
     public Account create(Account account) {
+        if(accountOwnerDao.getById(account.getOwnerId()) == null) {
+            throw new BadRequestAppException("Account Owner not exists");
+        }
         if (BigDecimal.ZERO.compareTo(account.getAmount()) > 0) {
             throw new BadRequestAppException("Balance is negative");
         }
@@ -56,6 +62,11 @@ public class AccountServiceImpl implements AccountService {
 
     public Account getById(int accountId) {
         return accountDao.getById(accountId);
+    }
+
+    @Override
+    public List<Account> getByOwnerId(int ownerId) {
+        return accountDao.getByOwnerId(ownerId);
     }
 
     public boolean delete(int accountId) {

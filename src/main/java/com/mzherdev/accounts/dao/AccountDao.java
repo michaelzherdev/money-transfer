@@ -11,6 +11,8 @@ public interface AccountDao {
 
     Account getById(int accountId);
 
+    List<Account> getByOwnerId(int ownerId);
+
     Account create(Account account);
 
     boolean delete(int accountId);

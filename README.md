@@ -39,6 +39,7 @@ Please put your work on github or bitbucket.
 | DELETE | /accounts/{id} | delete account by id | 
 | GET | /owners | get all account owners | 
 | GET | /owners/{id} | get account owner by id | 
+| GET | /owners/{id}/accounts | get owner accounts by owner id | 
 | POST | /owners | create a new owner | 
 | DELETE | /owner/{id} | delete owner | 
 

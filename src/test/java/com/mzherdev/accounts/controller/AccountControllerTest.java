@@ -50,7 +50,7 @@ public class AccountControllerTest extends AbstractControllerTest {
     @Test
     public void testCreateAccount() throws IOException, URISyntaxException {
         URI uri = builder.setPath("/accounts").build();
-        Account account = new Account(BigDecimal.TEN, "USD", 5);
+        Account account = new Account(BigDecimal.TEN, "USD", 1);
         String jsonInString = mapper.writeValueAsString(account);
         StringEntity entity = new StringEntity(jsonInString);
 
@@ -63,8 +63,24 @@ public class AccountControllerTest extends AbstractControllerTest {
         assertEquals(200, statusCode);
         String jsonString = EntityUtils.toString(response.getEntity());
         Account afterCreation = mapper.readValue(jsonString, Account.class);
-        assertEquals(5, afterCreation.getOwnerId());
+        assertEquals(5, afterCreation.getId());
+        assertEquals(1, afterCreation.getOwnerId());
         assertEquals(Currency.USD.name(), afterCreation.getCurrencyCode());
+    }
+
+    @Test
+    public void testCreateAccountWithUniexistedOwner() throws IOException, URISyntaxException {
+        URI uri = builder.setPath("/accounts").build();
+        Account acc = new Account(BigDecimal.ONE, "USD", 100);
+        String jsonInString = mapper.writeValueAsString(acc);
+        StringEntity entity = new StringEntity(jsonInString);
+        HttpPost request = new HttpPost(uri);
+        request.setHeader("Content-type", "application/json");
+        request.setEntity(entity);
+        HttpResponse response = client.execute(request);
+        int statusCode = response.getStatusLine().getStatusCode();
+        assertEquals(400, statusCode);
+        assertEquals("Account Owner not exists", EntityUtils.toString(response.getEntity()));
     }
 
     @Test
