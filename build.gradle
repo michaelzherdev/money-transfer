@@ -2,13 +2,20 @@ plugins {
     id "io.spring.dependency-management" version "1.0.6.RELEASE"
     id "com.github.johnrengelman.shadow" version "4.0.0"
     id "net.ltgt.apt-eclipse" version "0.18"
-    id "net.ltgt.apt-idea" version "0.18"	
+    id "net.ltgt.apt-idea" version "0.18"
+    id 'java-library'
 }
 
-apply plugin:"application"
-apply plugin:"java"
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
 
-version "0.1"
+apply plugin: "application"
+apply plugin: "java"
+apply plugin: 'com.github.johnrengelman.shadow'
+
+version "1.0"
 group "com.mzherdev.accounts"
 
 repositories {
@@ -37,6 +44,9 @@ dependencies {
     compile "io.micronaut.configuration:micronaut-hibernate-validator"
 
     compile "io.micronaut:micronaut-inject-java"
+
+    implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2"
+    implementation "org.glassfish.jaxb:jaxb-runtime:2.3.2"
 
     runtime "com.h2database:h2"
 

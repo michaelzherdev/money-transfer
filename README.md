@@ -23,6 +23,11 @@ Implicit requirements:
 ```sh
 ./gradlew run
 ```
+or
+```sh
+./gradlew shadowJar
+java -jar build/libs/accounts-1.0.jar
+```
 
 ### Endpoints
 
