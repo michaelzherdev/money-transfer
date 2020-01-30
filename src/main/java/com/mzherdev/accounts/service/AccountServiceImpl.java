@@ -99,8 +99,8 @@ public class AccountServiceImpl implements AccountService {
 
         from.setAmount(balance);
         accountDao.update(from);
-        from.setAmount(to.getAmount().add(amount));
-        accountDao.update(from);
+        to.setAmount(to.getAmount().add(amount));
+        accountDao.update(to);
 
         return true;
     }

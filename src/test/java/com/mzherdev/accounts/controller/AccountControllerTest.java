@@ -47,21 +47,21 @@ public class AccountControllerTest extends AbstractControllerTest {
     public void testCreateAccountWithUnExistedOwner() {
         Account account = new Account(BigDecimal.TEN, "USD", 100);
         HttpRequest request = HttpRequest.POST("/accounts", account);
-        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST);
+        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST, "Account Owner not exists");
     }
 
     @Test
     public void testCreateAccountWithNegativeBalance() {
         Account account = new Account(BigDecimal.ONE.negate(), "USD", 1);
         HttpRequest request = HttpRequest.POST("/accounts", account);
-        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST);
+        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST, "Balance is negative");
     }
 
     @Test
     public void testCreateAccountWithUnexistedCurrencyBalance() {
         Account account = new Account(BigDecimal.ONE, "RUS", 1);
         HttpRequest request = HttpRequest.POST("/accounts", account);
-        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST);
+        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST, "Currency not valid");
     }
 
     @Test
@@ -73,7 +73,7 @@ public class AccountControllerTest extends AbstractControllerTest {
 
     @Test
     public void testDeleteNonExistingAccount() {
-        performRequestAndAssertBadStatus(HttpRequest.DELETE("/accounts/200"), HttpStatus.NOT_FOUND);
+        performRequestAndAssertBadStatus(HttpRequest.DELETE("/accounts/200"), HttpStatus.NOT_FOUND, "Not Found");
     }
 
     @Test
@@ -95,7 +95,7 @@ public class AccountControllerTest extends AbstractControllerTest {
         Account account = client.toBlocking().retrieve(request, Account.class);
 
         HttpRequest putRequest = HttpRequest.PUT("/accounts/1/deposit/0", account);
-        performRequestAndAssertBadStatus(putRequest, HttpStatus.BAD_REQUEST);
+        performRequestAndAssertBadStatus(putRequest, HttpStatus.BAD_REQUEST, "Invalid Deposit amount");
     }
 
     @Test
@@ -104,7 +104,7 @@ public class AccountControllerTest extends AbstractControllerTest {
         Account account = client.toBlocking().retrieve(request, Account.class);
 
         HttpRequest putRequest = HttpRequest.PUT("/accounts/100/deposit/10", account);
-        performRequestAndAssertBadStatus(putRequest, HttpStatus.BAD_REQUEST);
+        performRequestAndAssertBadStatus(putRequest, HttpStatus.BAD_REQUEST, "Account does not exist");
     }
 
     @Test
@@ -126,7 +126,7 @@ public class AccountControllerTest extends AbstractControllerTest {
         Account account = client.toBlocking().retrieve(request, Account.class);
 
         HttpRequest putRequest = HttpRequest.PUT("/accounts/1/withdraw/0", account);
-        performRequestAndAssertBadStatus(putRequest, HttpStatus.BAD_REQUEST);
+        performRequestAndAssertBadStatus(putRequest, HttpStatus.BAD_REQUEST, "Invalid Deposit amount");
     }
 
     @Test
@@ -135,7 +135,7 @@ public class AccountControllerTest extends AbstractControllerTest {
         Account account = client.toBlocking().retrieve(request, Account.class);
 
         HttpRequest putRequest = HttpRequest.PUT("/accounts/100/withdraw/10", account);
-        performRequestAndAssertBadStatus(putRequest, HttpStatus.BAD_REQUEST);
+        performRequestAndAssertBadStatus(putRequest, HttpStatus.BAD_REQUEST, "Account does not exist");
     }
 
     @Test
@@ -150,41 +150,41 @@ public class AccountControllerTest extends AbstractControllerTest {
     public void testTransferBetweenAccountsWithZeroAmount() {
         AccountTransfer transfer = new AccountTransfer(1, 2, new BigDecimal("0.00"));
         HttpRequest request = HttpRequest.PUT("/accounts/transfer", transfer);
-        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST);
+        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST, "Invalid Transfer amount");
     }
 
     @Test
     public void testTransferOnSameAccount() {
         AccountTransfer transfer = new AccountTransfer(1, 1, new BigDecimal("50.00"));
         HttpRequest request = HttpRequest.PUT("/accounts/transfer", transfer);
-        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST);
+        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST, "Impossible to transfer money on the same account");
     }
 
     @Test
     public void testTransferBetweenAccountsWithDifferentCurrencies() {
         AccountTransfer transfer = new AccountTransfer(1, 3, new BigDecimal("50.00"));
         HttpRequest request = HttpRequest.PUT("/accounts/transfer", transfer);
-        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST);
+        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST, "Transaction currency are different between accounts");
     }
 
     @Test
     public void testTransferBetweenAccountsFromNotExisted() {
         AccountTransfer transfer = new AccountTransfer(100, 2, new BigDecimal("50.00"));
         HttpRequest request = HttpRequest.PUT("/accounts/transfer", transfer);
-        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST);
+        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST, "From account not exists : 100");
     }
 
     @Test
     public void testTransferBetweenAccountsToNotExisted() {
         AccountTransfer transfer = new AccountTransfer(1, 100, new BigDecimal("50.00"));
         HttpRequest request = HttpRequest.PUT("/accounts/transfer", transfer);
-        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST);
+        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST, "To account not exists : 100");
     }
 
     @Test
     public void testTransferBetweenAccountsWithInsufficientAmount() {
         AccountTransfer transfer = new AccountTransfer(1, 2, new BigDecimal("500.00"));
         HttpRequest request = HttpRequest.PUT("/accounts/transfer", transfer);
-        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST);
+        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST, "To account not exists : 2");
     }
 }

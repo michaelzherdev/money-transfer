@@ -35,10 +35,11 @@ public abstract class AbstractControllerTest {
         }
     }
 
-    protected void performRequestAndAssertBadStatus(HttpRequest request, HttpStatus status) {
+    protected void performRequestAndAssertBadStatus(HttpRequest request, HttpStatus status, String message) {
         HttpClientResponseException httpClientResponseException = assertThrows(HttpClientResponseException.class, () ->
                 client.toBlocking().exchange(request, Account.class));
         assertEquals(status, httpClientResponseException.getResponse().status());
+        assertEquals(message, httpClientResponseException.getMessage());
     }
 
 }

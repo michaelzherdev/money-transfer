@@ -54,14 +54,14 @@ public class AccountOwnerControllerTest extends AbstractControllerTest {
     public void testCreateAccountOwnerWithEmptyName() {
         AccountOwner owner = new AccountOwner(null, "new111");
         HttpRequest request = HttpRequest.POST("/owners", owner);
-        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST);
+        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST, "Account Owner name is required");
     }
 
     @Test
     public void testCreateAccountOwnerWithEmptyLastName() {
         AccountOwner owner = new AccountOwner("new1", "");
         HttpRequest request = HttpRequest.POST("/owners", owner);
-        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST);
+        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST, "Account Owner lastName is required");
     }
 
     @Test
@@ -73,12 +73,12 @@ public class AccountOwnerControllerTest extends AbstractControllerTest {
     @Test
     public void testDeleteAccountOwnerWithAccounts() {
         HttpRequest request = HttpRequest.DELETE("/owners/2");
-        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST);
+        performRequestAndAssertBadStatus(request, HttpStatus.BAD_REQUEST, "Owner has opened accounts, cannot be removed");
     }
 
     @Test
     public void testDeleteNonExistingAccount() {
         HttpRequest request = HttpRequest.DELETE("/owners/200");
-        performRequestAndAssertBadStatus(request, HttpStatus.NOT_FOUND);
+        performRequestAndAssertBadStatus(request, HttpStatus.NOT_FOUND, "Not Found");
     }
 }
